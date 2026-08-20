@@ -1,0 +1,20 @@
+name: Keep Render backend awake
+ 
+on:
+  schedule:
+    # Runs every 10 minutes. GitHub Actions cron can lag a few minutes under
+    # load, so 10 minutes gives comfortable margin before Render's 15-minute
+    # idle sleep kicks in.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {} # lets you trigger it manually from the Actions tab to test
+ 
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend
+        run: |
+          curl -sS -o /dev/null -w "Status: %{http_code}\n" \
+            "https://jubilee-farmers-backend.onrender.com/api/payment/config" \
+            || echo "Ping failed (backend may still be waking up) — this is fine, next run will retry."
+ 
